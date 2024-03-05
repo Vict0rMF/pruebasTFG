@@ -33,6 +33,11 @@ class HuskyRobot(Robot):
         self.joints = wheeljoints
         self.width = 0.555
         self.wheel_radius = 0.165
+        self.Vmax=0
+        self.Wmax=0
+        self.Vmin=0
+        self.amax=0
+        self.alphamax=0
         # self.Vmax = 1
         # self.Wmax = np.pi / 2
         # self.Vmin=0.1
@@ -45,17 +50,15 @@ class HuskyRobot(Robot):
         self.omega = []
 
     def chackmax (self,V, w):
-        vmax=self.Vmax
-        wmax=self.Wmax
-        vmin=self.Vmin
-        if V > vmax:
-            V = vmax
-        elif V < vmin:
-            V = vmin
-        if w > wmax:
-            w = wmax
-        elif w < -wmax:
-            w = -wmax
+
+        if V > self.Vmax:
+            V = self.Vmax
+        elif V < self.Vmin:
+            V = self.Vmin
+        if w > self.Wmax:
+            w = self.Wmax
+        elif w < -self.Wmax:
+            w = -self.Wmax
         return V, w
 
     def calcVW (self):
@@ -81,7 +84,7 @@ class HuskyRobot(Robot):
         print('hola')
         # Getting data from config.yaml
         try:
-            with open(r'C:/Users/User/Desktop/tfg/config/prueba.yaml') as file:
+            with open(r'C:/Users/User/pruebasTFG/config/Husky_Config.yaml') as file: #r'C:/Users/User/Desktop/tfg/prueba.yaml'
                 param_list = yaml.load(file, Loader=yaml.FullLoader)
                 print(param_list)
         except:
@@ -92,7 +95,12 @@ class HuskyRobot(Robot):
             self.Vmin = param_list.get('Vmin')
             self.amax = param_list.get('amax')
             self.alphamax = param_list.get('alphamax')
-            print(f'{self.Vmax=},{self.Wmax=},{self.Vmin=},{self.amax=},{self.alphamax=}')
+            self.Vmax=float(self.Vmax)
+            self.Wmax = float(self.Wmax)
+            self.Vmin = float(self.Vmin)
+            self.amax = float(self.amax)
+            self.alphamax = float(self.alphamax)
 
         except:
             print("Error getting params from config.YAML!...")
+

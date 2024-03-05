@@ -1,6 +1,6 @@
 
 from robots.simulation import Simulation
-from robots.husky import HuskyRobot
+from husky import HuskyRobot
 from robots.objects import CoppeliaObject
 import numpy as np
 import matplotlib.pyplot as plt

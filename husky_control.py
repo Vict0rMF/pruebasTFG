@@ -118,7 +118,7 @@ def goto (robot, base, puntos):
             u = np.array([(ux), (uy)])
             [V, w] = np.linalg.inv(jacob) @ u
             V = V + vdes
-            V, w = robot.chackmax(V, w)
+            V, w = robot.chackmax(V,w)
             robot.V.append(V)
             robot.W.append(w)
             print('V', V, 'w', w)
