@@ -4,10 +4,10 @@ from robots.husky import HuskyRobot
 from robots.objects import CoppeliaObject
 import numpy as np
 import matplotlib.pyplot as plt
-from practicals.kinematics.husky_control import goto
+from husky_control import goto
 from practicals.kinematics.husky_control import sigue_puntos
-from practicals.kinematics.husky_traj import convertCoordinates
-from practicals.kinematics.husky_traj import interpTraj
+from husky_traj import convertCoordinates
+from husky_traj import interpTraj
 from main import getTrajNodes
 
 
