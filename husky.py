@@ -84,7 +84,7 @@ class HuskyRobot(Robot):
         print('hola')
         # Getting data from config.yaml
         try:
-            with open(r'C:/Users/User/pruebasTFG/config/Husky_Config.yaml') as file: #r'C:/Users/User/Desktop/tfg/prueba.yaml'
+            with open(r'C:/Users/User/pruebasTFG/config/Husky_Config.yaml') as file:
                 param_list = yaml.load(file, Loader=yaml.FullLoader)
                 print(param_list)
         except:
