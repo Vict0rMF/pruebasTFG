@@ -70,21 +70,51 @@ def recta ():
         lon += 1
     return lista
 
-    # fig, axs = plt.subplots(2, 1)
-    # for i in range(1, 6):
-    #     robot.move(i / 10, 0)
-    #     j = 0
-    #     listV = []
-    #     listW = []
-    #     for j in range(150):
-    #         [wl, nada, wr, nada2] = robot.get_joint_speeds()
-    #         Va, Wa = robot.calcVW()
-    #         listV.append(Va)
-    #         listW.append(Wa)
-    #         robot.wait()
-    #     robot.move(0, 0)
-    #     j = 0
-    #     for j in range(150):
-    #         robot.wait()
-    #     axs[0].plot(listV)
-    #     axs[1].plot(listW)
+def test(robot,base):
+    time=0
+    robot.move(0.3,0.0)
+    j = 0
+    listV = []
+    listW = []
+    for j in range(75):
+        vel, ang = base.getVelocity()
+        vel = np.linalg.norm(vel)
+        ang = ang[2]
+        listV.append(vel)
+        listW.append(ang)
+        robot.time.append(time)
+        time+=0.05
+        robot.wait()
+    robot.move(0.3, 0.8)
+    j = 0
+    for j in range(150):
+        vel, ang = base.getVelocity()
+        vel = np.linalg.norm(vel)
+        ang = ang[2]
+        listV.append(vel)
+        listW.append(ang)
+        robot.time.append(time)
+        time += 0.05
+        robot.wait()
+    robot.move(0.3, -0.8)
+    j = 0
+    for j in range(1):
+        vel, ang = base.getVelocity()
+        vel = np.linalg.norm(vel)
+        ang = ang[2]
+        listV.append(vel)
+        listW.append(ang)
+        robot.time.append(time)
+        time += 0.05
+        robot.wait()
+    plt.figure(3)
+    plt.plot(robot.time,listV)
+    plt.title('Velocidad lineal', fontsize=20)
+    plt.ylabel('V(m/s)')
+    plt.xlabel('time(s)')
+    plt.figure(4)
+    plt.plot(robot.time,listW)
+    plt.title('Velocidad angular', fontsize=20)
+    plt.ylabel('w(rad/s)')
+    plt.xlabel('time(s)')
+    plt.show()

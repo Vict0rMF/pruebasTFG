@@ -46,12 +46,10 @@ def mov_posicion (robot, base, objetivo):
         robot.W.append(0)
         T_base = base.get_transform()
         posicion = T_base.pos()
-        robot.x.append(posicion[0])
-        robot.y.append(posicion[1])
         print('posac')
         print(posicion)
 
-        e = np.linalg.norm(objetivo - posicion)
+        e = np.linalg.norm(posicion - objetivo)
         print(e)
         if e < 0.3:
             robot.move(v=0, w=0)
@@ -118,7 +116,7 @@ def goto (robot, base, puntos):
             u = np.array([(ux), (uy)])
             [V, w] = np.linalg.inv(jacob) @ u
             V = V + vdes
-            V, w = robot.chackmax(V,w)
+            V, w = robot.chackmax(V, w)
             robot.V.append(V)
             robot.W.append(w)
             print('V', V, 'w', w)
@@ -137,3 +135,186 @@ def goto (robot, base, puntos):
     plt.title('Velocidad angular', fontsize=30)
     plt.ylabel('w(rad/s)')
     plt.plot(robot.W)
+
+
+def checkturn (i, puntos, base):
+    T_base = base.get_transform()
+    pos = T_base.pos()
+    if (i == 0 or i == len(puntos) - 1 or i == 1 or i == 2):
+        return False
+    preang = np.arctan2(pos[1] - puntos[i - 1][1], pos[0] - puntos[i - 1][0])
+    print(f'{preang=}')
+    nextang = np.arctan2(puntos[i + 1][1] - pos[1], puntos[i + 1][0] - pos[0])
+    print(f'{nextang=}')
+    dif = nextang - preang
+    print(f'{dif=}')
+
+    preang2 = np.arctan2(puntos[i - 1][1] - puntos[i - 2][1], puntos[i - 1][0] - puntos[i - 2][0])
+
+    nextang2 = np.arctan2(pos[1] - puntos[i - 1][1], pos[0] - puntos[i - 1][0])
+
+    dif2 = nextang2 - preang2
+    print(f'{preang2=}')
+    print(f'{nextang2=}')
+    print(f'{dif2=}')
+    if dif > np.pi:
+        dif = dif - np.pi
+    elif dif < -np.pi:
+        dif = dif + np.pi
+    if dif2 > np.pi:
+        dif2 = dif2 - np.pi
+    elif dif2 < -np.pi:
+        dif2 = dif2 + np.pi
+
+    if np.pi / 3 < abs(dif) < np.pi - np.pi / 3:
+        aux = True
+    else:
+        aux = False
+    if np.pi / 3 < abs(dif2) < np.pi - np.pi / 3:
+        aux2 = True
+    else:
+        aux2 = False
+
+    if aux == True or aux2 == True:
+        return True
+    else:
+        return False
+
+
+def goto5 (robot, base, puntos):
+    time = 0
+    K = 0.2
+    Vdes = 0.3
+    i = 0
+    for punto in puntos:
+        print(punto, puntos[i])
+        if checkturn(i, puntos, base):
+            Vcom = Vdes / 2
+        else:
+            Vcom = Vdes
+        # Vcom=Vdes
+        xdes = punto[0]
+        ydes = punto[1]
+        i += 1
+        while (np.linalg.norm(punto - base.get_transform().pos())) > 0.7:
+            print('error', (np.linalg.norm(punto - base.get_transform().pos())))
+
+            T_base = base.get_transform()
+            om = T_base.euler()[0].abg[2]
+            pos = T_base.pos()
+
+            if i == len(puntos) - 1: i = 0
+            if (np.linalg.norm(puntos[i + 1] - pos)) < (np.linalg.norm(punto - pos)):
+                print('---------------------------------------------------------------------------')
+                break
+            robot.x.append(pos[0])
+            robot.y.append(pos[1])
+            vel, ang = base.getVelocity()
+            vel = np.linalg.norm(vel)
+            ang = ang[2]
+
+            omdes = np.arctan2(ydes - pos[1], xdes - pos[0])
+
+            V = Vcom
+            eom = omdes - om
+            if abs(eom) > np.pi / 2 and np.linalg.norm(punto - base.get_transform().pos()) < 2:
+                break
+            print(f'{omdes=},{om=},{eom=}')
+            w = K * eom
+            print(f'{w=}')
+            V, w = robot.checkmax(V, w)
+            robot.V.append(vel)
+            robot.time.append(time)
+            time += 0.05
+            robot.W.append(ang)
+            # print(f'{vel=}, {ang=}')
+            robot.move(V, w)
+            robot.wait()
+    plt.figure(1)
+    plt.title('Posición Husky', fontsize=30)
+    plt.xlabel('x(m)')
+    plt.ylabel('y(m)')
+    plt.plot(robot.x, robot.y, label='Trayectoria del Husky')
+    plt.figure(2)
+    plt.title('Velocidad lineal', fontsize=30)
+    plt.ylabel('V(m/s)')
+    plt.xlabel('time(s)')
+    long = len(robot.V)
+    plt.plot(robot.time, robot.V)
+
+    print(long)
+    # plt.xticks(robot.V,[f'{x*0.05}s' for x in range(0,long,600)])setxticks
+    plt.figure(3)
+    plt.title('Velocidad angular', fontsize=30)
+    plt.ylabel('w(rad/s)')
+    plt.xlabel('time(s)')
+    plt.plot(robot.time, robot.W)
+
+
+def gotoDef (robot, base, puntos, velocity, CSR, smoothing):
+    time = 0
+    K = 2
+    Vdes = velocity
+    i = 0
+    for punto in puntos:
+        print(punto, puntos[i])
+        if CSR:
+            if checkturn(i, puntos, base):
+                Vcom = Vdes / 2
+            else:
+                Vcom = Vdes
+        else:
+            Vcom = Vdes
+        xdes = punto[0]
+        ydes = punto[1]
+        i += 1
+        while (np.linalg.norm(punto - base.get_transform().pos())) > 0.7:
+            print('error', (np.linalg.norm(punto - base.get_transform().pos())))
+
+            T_base = base.get_transform()
+            om = T_base.euler()[0].abg[2]
+            pos = T_base.pos()
+
+            robot.x.append(pos[0])
+            robot.y.append(pos[1])
+            vel, ang = base.getVelocity()
+            vel = np.linalg.norm(vel)
+            ang = ang[2]
+
+            omdes = np.arctan2(ydes - pos[1], xdes - pos[0])
+
+            V = Vcom
+            eom = omdes - om
+            if smoothing:
+                if i == len(puntos) - 1: i = 0
+                if (np.linalg.norm(puntos[i + 1] - pos)) < (np.linalg.norm(punto - pos)):
+                    print('---------------------------------------------------------------------------')
+                    break
+                if abs(eom) > np.pi / 2 and np.linalg.norm(punto - base.get_transform().pos()) < 2:
+                    break
+            print(f'{omdes=},{om=},{eom=}')
+            w = K * eom
+            print(f'{w=}')
+            V, w = robot.checkmax(V, w)
+            robot.V.append(vel)
+            robot.time.append(time)
+            time += 0.05
+            robot.W.append(ang)
+            # print(f'{vel=}, {ang=}')
+            robot.move(V, w)
+            robot.wait()
+    plt.figure(1)
+    plt.title('Posición Husky', fontsize=20)
+    plt.xlabel('x(m)')
+    plt.ylabel('y(m)')
+    plt.plot(robot.x, robot.y, label='Trayectoria del Husky')
+    plt.figure(2)
+    plt.title('Velocidad lineal', fontsize=20)
+    plt.ylabel('V(m/s)')
+    plt.xlabel('time(s)')
+    plt.plot(robot.time, robot.V)
+    plt.figure(3)
+    plt.title('Velocidad angular', fontsize=30)
+    plt.ylabel('w(rad/s)')
+    plt.xlabel('time(s)')
+    plt.plot(robot.time, robot.W)
