@@ -254,6 +254,8 @@ def goto5 (robot, base, puntos):
 def gotoDef (robot, base, puntos, velocity, CSR, smoothing):
     time = 0
     K = 2
+    lv = []
+    lw = []
     Vdes = velocity
     i = 0
     for punto in puntos:
@@ -296,10 +298,10 @@ def gotoDef (robot, base, puntos, velocity, CSR, smoothing):
             w = K * eom
             print(f'{w=}')
             V, w = robot.checkmax(V, w)
-            robot.V.append(vel)
+            lv.append(vel)
             robot.time.append(time)
             time += 0.05
-            robot.W.append(ang)
+            lw.append(ang)
             # print(f'{vel=}, {ang=}')
             robot.move(V, w)
             robot.wait()
@@ -312,9 +314,76 @@ def gotoDef (robot, base, puntos, velocity, CSR, smoothing):
     plt.title('Velocidad lineal', fontsize=20)
     plt.ylabel('V(m/s)')
     plt.xlabel('time(s)')
-    plt.plot(robot.time, robot.V)
+    plt.plot(robot.time, lv)
     plt.figure(3)
     plt.title('Velocidad angular', fontsize=30)
     plt.ylabel('w(rad/s)')
     plt.xlabel('time(s)')
-    plt.plot(robot.time, robot.W)
+    plt.plot(robot.time, lw)
+
+
+def gotoDef2 (robot, base, puntos, velocity, CSR, smoothing):
+    time = 0
+    Kv = 2
+    Kw = 0.4
+    lv = []
+    lw = []
+    Vdes = velocity
+    i = 0
+    for punto in puntos:
+        print(punto, puntos[i])
+        xdes = punto[0]
+        ydes = punto[1]
+        i += 1
+        while (np.linalg.norm(punto - base.get_transform().pos())) > 0.5:
+            print('error', (np.linalg.norm(punto - base.get_transform().pos())))
+
+            T_base = base.get_transform()
+            om = T_base.euler()[0].abg[2]
+            pos = T_base.pos()
+
+            robot.x.append(pos[0])
+            robot.y.append(pos[1])
+            vel, ang = base.getVelocity()
+            vel = np.linalg.norm(vel)
+            ang = ang[2]
+
+            omdes = np.arctan2(ydes - pos[1], xdes - pos[0])
+
+            eom = omdes - om
+            if smoothing:
+                if i == len(puntos) - 1: i = 0
+                if (np.linalg.norm(puntos[i + 1] - pos)) < (np.linalg.norm(punto - pos)):
+                    print('---------------------------------------------------------------------------')
+                    break
+                if abs(eom) > np.pi / 2.5 and np.linalg.norm(punto - base.get_transform().pos()) < 2:
+                    break
+            print(f'{omdes=},{om=},{eom=}')
+            w = Kv * eom
+            print(f'{w=}')
+            w = np.clip(w, -robot.Wmax, robot.Wmax)
+            wcont = abs(w / robot.Wmax)
+            V = Vdes * (1 - Kw * wcont)
+            V, w = robot.checkmax(V, w)
+            lv.append(vel)
+            robot.time.append(time)
+            time += 0.05
+            lw.append(ang)
+            # print(f'{vel=}, {ang=}')
+            robot.move(V, w)
+            robot.wait()
+    plt.figure(1)
+    plt.title('Posición Husky', fontsize=20)
+    plt.xlabel('x(m)')
+    plt.ylabel('y(m)')
+    plt.plot(robot.x, robot.y, label='Trayectoria del Husky')
+    plt.figure(2)
+    plt.title('Velocidad lineal', fontsize=20)
+    plt.ylabel('V(m/s)')
+    plt.xlabel('time(s)')
+    plt.plot(robot.time, lv)
+    plt.figure(3)
+    plt.title('Velocidad angular', fontsize=30)
+    plt.ylabel('w(rad/s)')
+    plt.xlabel('time(s)')
+    plt.plot(robot.time, lw)

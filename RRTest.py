@@ -39,7 +39,6 @@ def simulate():
     pcl = KeyFrame()
     pcl.from_points(data)
     pcl.save_pointcloud('Pointcloud/pruebaCoppelia3.pcd')
-
     simulation.stop()
 
 
