@@ -20,6 +20,7 @@ def interpTraj (list, sep):
         dist = np.sqrt((list[i][0] - list[i + 1][0]) ** 2 + (list[i][1] - list[i + 1][1]) ** 2)
         print('distancia', dist)
         if dist < 2 * sep:
+            print('nada')
             newlist.append(list[i])
         else:
             step = round(dist / sep) + 1
@@ -35,7 +36,7 @@ def interpTraj (list, sep):
                 y = y_interp[j]
                 z = 0.243
                 newlist.append([x, y, z])
-
+            del newlist[-1]
     newlist.append(list[len(list) - 1])
     return newlist
 
@@ -69,17 +70,18 @@ def SplinTraj (lista, nodos):
     for nodo in nodos[1:-1]:
         index = lista.index(nodo)
         print(index)
-        del lista[index]
+        # del lista[index]
         auxlist = []
         for i in range(-3, 4, 1):
             auxlist.append([lista[index + i][0], lista[index + i][1], lista[index + i][2]])
         newlist = interpSpline(auxlist)
         del lista[index - 3:index + 4]
-        for k in range(len(newlist)):
-            plt.scatter(newlist[k][0], newlist[k][1])
-        plt.show()
+        # for k in range(len(newlist)):
+        #     plt.scatter(newlist[k][0], newlist[k][1])
+        # plt.show()
         for j in range(-3, len(newlist) - 3, 1):
-            lista.insert(index + j, [newlist[2 + j][0], newlist[2 + j][1], newlist[2 + j][2]])
+            lista.insert(index + j, [newlist[3 + j][0], newlist[3 + j][1], newlist[3 + j][2]])
+    del lista[0]
     return lista
 
 

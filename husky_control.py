@@ -323,11 +323,9 @@ def gotoDef (robot, base, puntos, velocity, CSR, smoothing):
 
 
 def gotoDef2 (robot, base, puntos, velocity, CSR, smoothing):
-    time = 0
+
     Kv = 2
-    Kw = 0.4
-    lv = []
-    lw = []
+    Kw = 0.7 #0.4
     Vdes = velocity
     i = 0
     for punto in puntos:
@@ -365,10 +363,10 @@ def gotoDef2 (robot, base, puntos, velocity, CSR, smoothing):
             wcont = abs(w / robot.Wmax)
             V = Vdes * (1 - Kw * wcont)
             V, w = robot.checkmax(V, w)
-            lv.append(vel)
-            robot.time.append(time)
-            time += 0.05
-            lw.append(ang)
+            robot.lv.append(vel)
+            robot.time.append(robot.seconds)
+            robot.seconds += 0.05
+            robot.lw.append(ang)
             # print(f'{vel=}, {ang=}')
             robot.move(V, w)
             robot.wait()
@@ -381,9 +379,9 @@ def gotoDef2 (robot, base, puntos, velocity, CSR, smoothing):
     plt.title('Velocidad lineal', fontsize=20)
     plt.ylabel('V(m/s)')
     plt.xlabel('time(s)')
-    plt.plot(robot.time, lv)
+    plt.plot(robot.time, robot.lv)
     plt.figure(3)
-    plt.title('Velocidad angular', fontsize=30)
+    plt.title('Velocidad angular', fontsize=20)
     plt.ylabel('w(rad/s)')
     plt.xlabel('time(s)')
-    plt.plot(robot.time, lw)
+    plt.plot(robot.time, robot.lw)

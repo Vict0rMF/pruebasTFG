@@ -48,6 +48,9 @@ class HuskyRobot(Robot):
         self.W = 0
         self.omega = []
         self.time = []
+        self.lv=[]
+        self.lw=[]
+        self.seconds=0
         self.simulation.sim.setObjectFloatParam(self.joints[0], self.simulation.sim.jointfloatparam_maxaccel, self.amax)
         self.simulation.sim.setObjectFloatParam(self.joints[1], self.simulation.sim.jointfloatparam_maxaccel, self.amax)
         self.simulation.sim.setObjectFloatParam(self.joints[2], self.simulation.sim.jointfloatparam_maxaccel, self.amax)
