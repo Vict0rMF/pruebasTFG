@@ -1,0 +1,13 @@
+
+-matplotlib
+-numpy
+-yaml
+-utm
+-scipy
+
+   #  Añadir a pyarte en robots.objects
+   # def getVelocity(self):
+   #      linear_velocity = []
+   #      angular_velocity = []
+   #      linear_velocity,angular_velocity = self.simulation.sim.getObjectVelocity(self.handle)
+   #      return linear_velocity,angular_velocity
