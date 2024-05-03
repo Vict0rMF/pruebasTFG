@@ -323,9 +323,8 @@ def gotoDef (robot, base, puntos, velocity, CSR, smoothing):
 
 
 def gotoDef2 (robot, base, puntos, velocity, CSR, smoothing):
-
     Kv = 2
-    Kw = 0.7 #0.4
+    Kw = 1  # 0.4
     Vdes = velocity
     i = 0
     for punto in puntos:
@@ -361,7 +360,7 @@ def gotoDef2 (robot, base, puntos, velocity, CSR, smoothing):
             print(f'{w=}')
             w = np.clip(w, -robot.Wmax, robot.Wmax)
             wcont = abs(w / robot.Wmax)
-            V = Vdes * (1 - Kw * wcont)
+            V = Vdes * (1 - Kw * wcont ** 2)
             V, w = robot.checkmax(V, w)
             robot.lv.append(vel)
             robot.time.append(robot.seconds)
@@ -385,3 +384,23 @@ def gotoDef2 (robot, base, puntos, velocity, CSR, smoothing):
     plt.ylabel('w(rad/s)')
     plt.xlabel('time(s)')
     plt.plot(robot.time, robot.lw)
+
+
+def CoordsToLocal (base, goal):
+    print(goal)
+    T_base = base.get_transform()
+    T1 = HomogeneousMatrix(goal, T_base.euler()[0])
+    T2 = HomogeneousMatrix(T_base.pos(), T_base.euler()[0])
+    tx = T1 * T2.inv()
+    posicion = tx.pos()
+    print('posicion')
+    return posicion
+
+
+def CoordsToGlobal (base, goal):
+    T_base = base.get_transform()
+    T1 = HomogeneousMatrix(goal, T_base.euler()[0])
+    T2 = HomogeneousMatrix(T_base.pos(), [0, 0, 0])
+    tx = T2 * T1
+    posicion = tx.pos()
+    return posicion
